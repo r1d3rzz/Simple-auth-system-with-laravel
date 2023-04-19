@@ -19,7 +19,11 @@
                         <x-form.input name="email" type="email" />
                         <x-form.input name="password" type="password" />
 
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div><button type="submit" class="btn btn-primary">Submit</button></div>
+                            <div class="text-muted">If you have not account <a href="/users/create">Register</a> Here.
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>

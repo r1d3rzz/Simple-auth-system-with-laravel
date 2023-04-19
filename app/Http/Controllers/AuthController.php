@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
@@ -20,6 +21,12 @@ class AuthController extends Controller
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'min:8', 'max:200'],
         ]);
+
+        if (!request()->file('profile')) {
+            $formData['profile'] = null;
+        } else {
+            $formData['profile'] = request()->file('profile')->store('profiles');
+        }
 
         $user = User::create($formData);
 
@@ -54,5 +61,59 @@ class AuthController extends Controller
         auth()->logout();
 
         return redirect("/")->with('success', 'GoodBye');
+    }
+
+    public function show()
+    {
+        if (!auth()->user()) {
+            return redirect("/users/login");
+        }
+
+        return view("auth.show", [
+            "user" => auth()->user()
+        ]);
+    }
+
+    public function edit(User $user)
+    {
+        return view("auth.edit", [
+            "user" => $user
+        ]);
+    }
+
+    public function update(User $user)
+    {
+
+        $formData = request()->validate([
+            "name" => ['required', "min:5", "max:200"],
+            "username" => ['required', "min:5", "max:200", Rule::unique("users", "username")->ignore($user->id)],
+        ]);
+
+        $deleteOldPic = request('deleteOldPic');
+        $file = request()->file("profile");
+
+        if ($file) {
+            $formData["profile"] = $file->store("profiles");
+        } else {
+            if ($deleteOldPic) {
+                $formData['profile'] = null;
+            } else {
+                $formData['profile'] = $user->profile;
+            }
+        }
+
+        DB::table('users')->where('email', $user->email)->update($formData);
+        return redirect("/users/profile")->with('success', 'Update Successful');
+    }
+
+    public function destroy(User $user)
+    {
+        if (auth()->user()) {
+            auth()->logout();
+            DB::table('users')->where('email', $user->email)->delete($user->id);
+            return redirect("/");
+        }
+
+        return redirect("/users/login");
     }
 }

@@ -24,4 +24,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('/users/login', 'login');
     Route::post('/users/login', 'post_login');
     Route::post('/users/logout', 'logout');
+    Route::get('/users/profile', 'show');
+    Route::get('/users/{user:username}/edit', 'edit');
+    Route::patch('/users/{user:email}/update', 'update');
+    Route::delete('/users/{user:email}/delete', 'destroy');
 });
